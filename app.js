@@ -461,7 +461,7 @@
     const d = new Date(value);
     if (isNaN(d.getTime())) return '';
     return new Intl.DateTimeFormat(undefined, {
-      month: 'long', day: 'numeric', year: 'numeric', hour: 'numeric', minute: '2-digit'
+      weekday: 'long', month: 'long', day: 'numeric', year: 'numeric', hour: 'numeric', minute: '2-digit'
     }).format(d);
   }
 

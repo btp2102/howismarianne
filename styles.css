@@ -1,19 +1,32 @@
 :root {
-  --paper: #f4f0e6;
-  --ink: #30302e;
-  --muted: #77736b;
-  --rule: #c9c3b7;
-  --button: #343431;
-  --buttonText: #f7f4ec;
-  --field: rgba(255,255,255,.32);
+  --paper: #f5edd8;
+  --ink: #2e2a22;
+  --muted: #665e4d;
+  --rule: #d6caa8;
+  --button: #3a352b;
+  --buttonText: #f8f2e0;
+  --field: rgba(255,252,240,.38);
+  /* Paper texture, drawn in CSS: fine grain plus very faint mottling. */
+  --grain: url("data:image/svg+xml,%3Csvg%20xmlns%3D%27http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%27%20width%3D%27260%27%20height%3D%27260%27%3E%3Cfilter%20id%3D%27g%27%20x%3D%270%27%20y%3D%270%27%20width%3D%27100%25%27%20height%3D%27100%25%27%3E%3CfeTurbulence%20type%3D%27fractalNoise%27%20baseFrequency%3D%27.85%27%20numOctaves%3D%272%27%20seed%3D%274%27%20stitchTiles%3D%27stitch%27%2F%3E%3CfeColorMatrix%20values%3D%270%200%200%200%20.42%20%200%200%200%200%20.31%20%200%200%200%200%20.13%20%200%200%200%20.20%200%27%2F%3E%3C%2Ffilter%3E%3Crect%20width%3D%27100%25%27%20height%3D%27100%25%27%20filter%3D%27url%28%23g%29%27%2F%3E%3C%2Fsvg%3E");
+  --mottle: url("data:image/svg+xml,%3Csvg%20xmlns%3D%27http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%27%20width%3D%27900%27%20height%3D%27900%27%3E%3Cfilter%20id%3D%27m%27%20x%3D%270%27%20y%3D%270%27%20width%3D%27100%25%27%20height%3D%27100%25%27%3E%3CfeTurbulence%20type%3D%27fractalNoise%27%20baseFrequency%3D%27.006%20.009%27%20numOctaves%3D%273%27%20seed%3D%279%27%20stitchTiles%3D%27stitch%27%2F%3E%3CfeColorMatrix%20values%3D%270%200%200%200%20.55%20%200%200%200%200%20.40%20%200%200%200%200%20.14%20%200%200%200%20.17%200%27%2F%3E%3C%2Ffilter%3E%3Crect%20width%3D%27100%25%27%20height%3D%27100%25%27%20filter%3D%27url%28%23m%29%27%2F%3E%3C%2Fsvg%3E");
 }
 
 * { box-sizing: border-box; }
 html, body {
-  margin: 0; padding: 0; background: var(--paper); color: var(--ink);
+  margin: 0; padding: 0; color: var(--ink);
   font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Helvetica, Arial, sans-serif;
 }
-body { min-height: 100vh; }
+html {
+  background-color: var(--paper);
+  background-image: var(--grain), var(--mottle);
+  background-size: 260px 260px, 900px 900px;
+}
+body { min-height: 100vh; background: transparent; }
+/* Soft aging toward the edges of the screen; stays put while the page scrolls. */
+body::before {
+  content: ''; position: fixed; inset: 0; z-index: -1; pointer-events: none;
+  background: radial-gradient(ellipse at 50% 30%, rgba(255,251,236,.40) 0%, rgba(255,251,236,0) 55%, rgba(130,95,35,.08) 100%);
+}
 button, input { font: inherit; }
 button { cursor: pointer; }
 [hidden] { display: none !important; }
@@ -24,7 +37,7 @@ button { cursor: pointer; }
   justify-content: center; padding: 30px;
 }
 .login-box { width: 100%; max-width: 380px; }
-.login-box h1 { font-size: 25px; font-weight: 500; margin: 0 0 32px; }
+.login-box h1 { font-size: 32px; font-weight: 500; line-height: 1.15; letter-spacing: -0.01em; margin: 0 0 32px; }
 .login-box input {
   width: 100%; border: 0; border-bottom: 1px solid var(--ink);
   border-radius: 0; padding: 12px 0; background: transparent;
@@ -38,12 +51,12 @@ header {
   display: flex; justify-content: space-between; align-items: baseline;
   gap: 20px;
 }
-header h1 { font-size: 22px; font-weight: 500; margin: 0; min-height: 1.25em; }
-.login-box h1 { min-height: 1.25em; }
+header h1 { font-size: 34px; font-weight: 500; line-height: 1.15; letter-spacing: -0.01em; margin: 0; min-height: 1.15em; flex: 1 1 auto; min-width: 0; overflow-wrap: anywhere; }
+.login-box h1 { min-height: 1.15em; }
 .welcome { margin-top: 28px; max-width: 34em; font-size: 17px; line-height: 1.65; overflow-wrap: anywhere; }
 .welcome p { margin: 0 0 1em; }
 .welcome p:last-child { margin-bottom: 0; }
-.header-actions { display: flex; gap: 18px; align-items: center; }
+.header-actions { display: flex; gap: 18px; align-items: center; flex: none; white-space: nowrap; }
 .text-button {
   border: 0; padding: 0; background: transparent; color: var(--ink);
   text-decoration: underline; text-underline-offset: 3px;
@@ -107,7 +120,7 @@ input[type="text"]:focus { border-color: var(--ink); }
 }
 .comment-editor { min-height: 100px; }
 .editor:empty:before {
-  content: attr(data-placeholder); color: #99958d; pointer-events: none;
+  content: attr(data-placeholder); color: #7d7561; pointer-events: none;
 }
 
 .primary-button {
@@ -127,6 +140,8 @@ input[type="text"]:focus { border-color: var(--ink); }
 @media (max-width: 600px) {
   #site { padding: 32px 20px 80px; }
   .masthead { margin-bottom: 52px; }
+  header h1 { font-size: 28px; }
+  .login-box h1 { font-size: 28px; }
   .welcome { font-size: 16px; }
   .post-title { font-size: 21px; }
   .post-body { font-size: 16px; }

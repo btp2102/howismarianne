@@ -6,14 +6,14 @@
   <meta name="robots" content="noindex, nofollow">
   <meta name="referrer" content="no-referrer">
   <meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'self'; style-src 'self'; img-src 'self' data:; connect-src https://script.google.com https://script.googleusercontent.com; base-uri 'none'; form-action 'none'">
-  <title>Family Updates</title>
+  <title>Updates</title>
   <link rel="stylesheet" href="styles.css">
 </head>
 <body>
 
   <div id="loginScreen" hidden>
     <form id="loginForm" class="login-box" novalidate>
-      <h1>Family Updates</h1>
+      <h1 id="loginTitle"></h1>
       <input id="password" type="password" placeholder="Password" autocomplete="current-password" aria-label="Password">
       <button id="loginButton" class="primary-button" type="submit">Enter</button>
       <div id="loginError" class="error" role="alert"></div>
@@ -21,13 +21,16 @@
   </div>
 
   <main id="site" hidden>
-    <header>
-      <h1>Family Updates</h1>
-      <div class="header-actions">
-        <button id="newPostButton" class="text-button" type="button" hidden>Post update</button>
-        <button id="logoutButton" class="text-button logout" type="button">Log out</button>
-      </div>
-    </header>
+    <div class="masthead">
+      <header>
+        <h1 id="siteTitle"></h1>
+        <div class="header-actions">
+          <button id="newPostButton" class="text-button" type="button" hidden>Post update</button>
+          <button id="logoutButton" class="text-button logout" type="button">Log out</button>
+        </div>
+      </header>
+      <div id="welcome" class="welcome" hidden></div>
+    </div>
 
     <section id="postForm" class="form-panel" hidden>
       <h2>Post an update</h2>

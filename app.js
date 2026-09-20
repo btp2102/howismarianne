@@ -4,6 +4,7 @@
   const API_URL = window.FAMILY_UPDATES_BACKEND_URL || '';
   const TOKEN_KEY = 'familyUpdatesToken';
   const NAME_KEY = 'familyUpdatesName';
+  const TITLE_KEY = 'familyUpdatesTitle';
 
   const $ = id => document.getElementById(id);
 
@@ -23,6 +24,28 @@
   const site = $('site');
   const postsEl = $('posts');
   const moreButton = $('moreButton');
+  const welcomeEl = $('welcome');
+
+  // The title comes from the Settings tab. Remember it so repeat visits show it instantly.
+  function applyTitle(title) {
+    if (!title) return;
+    $('siteTitle').textContent = title;
+    $('loginTitle').textContent = title;
+    document.title = title;
+    store.set(TITLE_KEY, title);
+  }
+
+  function renderWelcome(text) {
+    if (text && text.trim()) {
+      welcomeEl.innerHTML = richTextToHtml(text);
+      welcomeEl.hidden = false;
+    } else {
+      welcomeEl.textContent = '';
+      welcomeEl.hidden = true;
+    }
+  }
+
+  applyTitle(store.get(TITLE_KEY));
 
   // ------------------------------------------------------------ backend
 
@@ -79,6 +102,7 @@
     postsEl.textContent = '';
     postEls.clear();
     moreButton.hidden = true;
+    renderWelcome('');
     hidePostForm();
   }
 
@@ -159,6 +183,8 @@
       loadFirstPage();
     } else {
       showLogin('');
+      // The sign-in screen needs the title before anyone is signed in.
+      api('info').then(r => applyTitle(r && r.title)).catch(() => {});
     }
   }
 
@@ -167,6 +193,8 @@
   function renderFirstPage(data) {
     role = data.role;
     nextBefore = data.next;
+    applyTitle(data.title);
+    renderWelcome(data.welcome);
     postsEl.textContent = '';
     postEls.clear();
     applyRole();

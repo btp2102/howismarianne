@@ -193,6 +193,7 @@
   function renderFirstPage(data) {
     role = data.role;
     nextBefore = data.next;
+    if (data.token) { token = data.token; store.set(TOKEN_KEY, token); }   // renewed for another 40 days
     applyTitle(data.title);
     renderWelcome(data.welcome);
     postsEl.textContent = '';

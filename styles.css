@@ -46,14 +46,15 @@ button { cursor: pointer; }
 .login-box button { margin-top: 25px; }
 
 #site { width: 100%; max-width: 720px; margin: 0 auto; padding: 48px 24px 100px; }
-.masthead { margin-bottom: 70px; }
+/* Title + welcome, closed off from the posts by a heavier rule than the one between posts. */
+.masthead { padding-bottom: 36px; margin-bottom: 52px; border-bottom: 2px solid var(--ink); }
 header {
   display: flex; justify-content: space-between; align-items: baseline;
   gap: 20px;
 }
 header h1 { font-size: 34px; font-weight: 500; line-height: 1.15; letter-spacing: -0.01em; margin: 0; min-height: 1.15em; flex: 1 1 auto; min-width: 0; overflow-wrap: anywhere; }
 .login-box h1 { min-height: 1.15em; }
-.welcome { margin-top: 28px; max-width: 34em; font-size: 17px; line-height: 1.65; overflow-wrap: anywhere; }
+.welcome { margin-top: 28px; max-width: 34em; font-size: 17px; line-height: 1.65; font-weight: 500; color: #1a170f; overflow-wrap: anywhere; }
 .welcome p { margin: 0 0 1em; }
 .welcome p:last-child { margin-bottom: 0; }
 .header-actions { display: flex; gap: 18px; align-items: center; flex: none; white-space: nowrap; }
@@ -139,7 +140,7 @@ input[type="text"]:focus { border-color: var(--ink); }
 
 @media (max-width: 600px) {
   #site { padding: 32px 20px 80px; }
-  .masthead { margin-bottom: 52px; }
+  .masthead { padding-bottom: 28px; margin-bottom: 40px; }
   header h1 { font-size: 28px; }
   .login-box h1 { font-size: 28px; }
   .welcome { font-size: 16px; }

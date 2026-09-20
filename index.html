@@ -25,6 +25,14 @@
     </form>
   </div>
 
+  <div id="noticeScreen" hidden>
+    <div class="login-box">
+      <h1 id="noticeTitle"></h1>
+      <p id="noticeText" class="notice-text" role="status">One moment…</p>
+      <a id="noticeLink" class="text-button" href="./" hidden>Open the site</a>
+    </div>
+  </div>
+
   <main id="site" hidden>
     <div class="masthead">
       <header>
@@ -35,6 +43,26 @@
         </div>
       </header>
       <div id="welcome" class="welcome" hidden></div>
+      <div id="alertsTools" class="masthead-tools" hidden>
+        <button id="alertsButton" class="text-button subtle" type="button">Get email alerts</button>
+      </div>
+
+      <section id="alertsForm" class="form-panel" hidden>
+        <h2>Email alerts</h2>
+        <p class="form-note">Get an email when there is news. Emails never include the full text; you read that here on the site. We'll first send a link to confirm your address, and every alert has an unsubscribe link.</p>
+
+        <div class="field">
+          <label for="alertsEmail">Your email address</label>
+          <input id="alertsEmail" type="text" inputmode="email" autocomplete="email" maxlength="254">
+        </div>
+
+        <label class="check"><input id="alertsUpdates" type="checkbox" checked> New updates</label>
+        <label id="alertsResponsesRow" class="check" hidden><input id="alertsResponses" type="checkbox"> New responses to updates</label>
+
+        <button id="alertsSend" class="primary-button" type="button">Send confirmation email</button>
+        <button id="alertsCancel" class="secondary-button" type="button">Cancel</button>
+        <div id="alertsStatus" class="status" role="status"></div>
+      </section>
     </div>
 
     <section id="postForm" class="form-panel" hidden>

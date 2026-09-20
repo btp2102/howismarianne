@@ -31,6 +31,7 @@
     if (!title) return;
     $('siteTitle').textContent = title;
     $('loginTitle').textContent = title;
+    $('noticeTitle').textContent = title;
     document.title = title;
     store.set(TITLE_KEY, title);
   }
@@ -104,6 +105,7 @@
     moreButton.hidden = true;
     renderWelcome('');
     hidePostForm();
+    applyAlerts(false);
   }
 
   function signOutWithMessage(message) {
@@ -173,6 +175,13 @@
   }
 
   function start() {
+    // Links in alert emails open this page with ?confirm=... or ?unsubscribe=...
+    const params = new URLSearchParams(location.search);
+    const emailToken = params.get('confirm') || params.get('unsubscribe');
+    if (emailToken && API_URL && API_URL.indexOf('PASTE_') !== 0) {
+      handleEmailLink(params.get('confirm') ? 'confirm' : 'unsubscribe', emailToken);
+      return;
+    }
     if (!API_URL || API_URL.indexOf('PASTE_') === 0) {
       showLogin('This site is not connected to its backend yet. Add the backend URL to config.js.');
       $('loginButton').disabled = true;
@@ -188,6 +197,79 @@
     }
   }
 
+  // ------------------------------------------------------------ email alerts
+
+  function applyAlerts(on) {
+    $('alertsTools').hidden = !on;
+    if (!on) hideAlertsForm();
+  }
+
+  $('alertsButton').addEventListener('click', () => {
+    const form = $('alertsForm');
+    if (!form.hidden) { hideAlertsForm(); return; }
+    $('alertsResponsesRow').hidden = role !== 'family';   // only family can follow responses
+    form.hidden = false;
+    $('alertsEmail').focus();
+    form.scrollIntoView({ behavior: 'smooth', block: 'start' });
+  });
+
+  $('alertsCancel').addEventListener('click', hideAlertsForm);
+
+  function hideAlertsForm() {
+    $('alertsForm').hidden = true;
+    $('alertsStatus').textContent = '';
+  }
+
+  $('alertsSend').addEventListener('click', async () => {
+    const email = $('alertsEmail').value.trim();
+    const updates = $('alertsUpdates').checked;
+    const responses = role === 'family' && $('alertsResponses').checked;
+    const status = $('alertsStatus');
+    const button = $('alertsSend');
+    if (!email) { status.textContent = 'Please enter your email address.'; return; }
+    if (!updates && !responses) { status.textContent = 'Please choose at least one kind of email.'; return; }
+    button.disabled = true;
+    status.textContent = 'Sending…';
+    try {
+      await api('subscribe', token, email, updates, responses);
+      status.textContent = 'Almost done: we sent a confirmation email to ' + email +
+        '. Open it and tap the link. It can take a few minutes, and it may land in your spam folder.';
+    } catch (err) {
+      handleError(err, status);
+    } finally {
+      button.disabled = false;
+    }
+  });
+
+  async function handleEmailLink(kind, tok) {
+    loginScreen.hidden = true;
+    site.hidden = true;
+    $('noticeScreen').hidden = false;
+    const text = $('noticeText');
+    try { history.replaceState(null, '', location.pathname); } catch (e) { /* ignore */ }   // keep the token out of the address bar
+    api('info').then(r => applyTitle(r && r.title)).catch(() => {});
+    try {
+      if (kind === 'confirm') {
+        text.textContent = confirmMessage(await api('confirmEmail', tok));
+      } else {
+        const r = await api('unsubscribe', tok);
+        text.textContent = r.removed
+          ? "You've been unsubscribed, and your address has been removed. You won't get any more emails."
+          : "You're not on the email list. This link may already have been used.";
+      }
+    } catch (err) {
+      text.textContent = (err && err.message) || 'Something went wrong. Please try again.';
+    }
+    $('noticeLink').hidden = false;
+  }
+
+  function confirmMessage(r) {
+    if (!r.confirmed) return 'There was nothing to confirm.';
+    if (r.updates && r.responses) return "You're all set. You'll get an email when there are new updates or new responses.";
+    if (r.responses) return "You're all set. You'll get an email when there are new responses.";
+    return "You're all set. You'll get an email when there is a new update.";
+  }
+
   // ------------------------------------------------------------ posts
 
   function renderFirstPage(data) {
@@ -196,6 +278,7 @@
     if (data.token) { token = data.token; store.set(TOKEN_KEY, token); }   // renewed for another 40 days
     applyTitle(data.title);
     renderWelcome(data.welcome);
+    applyAlerts(!!data.alerts);
     postsEl.textContent = '';
     postEls.clear();
     applyRole();

@@ -1,0 +1,92 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="robots" content="noindex, nofollow">
+  <meta name="referrer" content="no-referrer">
+  <meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'self'; style-src 'self'; img-src 'self' data:; connect-src https://script.google.com https://script.googleusercontent.com; base-uri 'none'; form-action 'none'">
+  <title>Family Updates</title>
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+
+  <div id="loginScreen" hidden>
+    <form id="loginForm" class="login-box" novalidate>
+      <h1>Family Updates</h1>
+      <input id="password" type="password" placeholder="Password" autocomplete="current-password" aria-label="Password">
+      <button id="loginButton" class="primary-button" type="submit">Enter</button>
+      <div id="loginError" class="error" role="alert"></div>
+    </form>
+  </div>
+
+  <main id="site" hidden>
+    <header>
+      <h1>Family Updates</h1>
+      <div class="header-actions">
+        <button id="newPostButton" class="text-button" type="button" hidden>Post update</button>
+        <button id="logoutButton" class="text-button logout" type="button">Log out</button>
+      </div>
+    </header>
+
+    <section id="postForm" class="form-panel" hidden>
+      <h2>Post an update</h2>
+
+      <div class="field">
+        <label for="postAuthor">Author</label>
+        <input id="postAuthor" type="text" maxlength="100" autocomplete="name">
+      </div>
+
+      <div class="field">
+        <label for="postTitle">Title (optional)</label>
+        <input id="postTitle" type="text" maxlength="200">
+      </div>
+
+      <div class="field">
+        <label id="postEditorLabel">Update</label>
+        <div class="editor-shell">
+          <div class="toolbar">
+            <button type="button" data-cmd="bold" title="Bold"><strong>B</strong></button>
+            <button type="button" data-cmd="italic" title="Italic"><em>I</em></button>
+            <button type="button" data-cmd="underline" title="Underline"><u>U</u></button>
+          </div>
+          <div id="postEditor" class="editor" contenteditable="true" role="textbox" aria-multiline="true" aria-labelledby="postEditorLabel" data-placeholder="Write your update..."></div>
+        </div>
+      </div>
+
+      <button id="publishButton" class="primary-button" type="button">Publish update</button>
+      <button id="cancelPostButton" class="secondary-button" type="button">Cancel</button>
+      <div id="postStatus" class="status" role="status"></div>
+    </section>
+
+    <div id="posts"><div class="empty">Loading updates…</div></div>
+    <button id="moreButton" class="text-button more-button" type="button" hidden>Show older updates</button>
+  </main>
+
+  <template id="commentFormTemplate">
+    <div class="comment-form">
+      <div class="field">
+        <label>Your name</label>
+        <input type="text" class="comment-name-input" maxlength="100" autocomplete="name">
+      </div>
+      <div class="field">
+        <label>Response</label>
+        <div class="editor-shell">
+          <div class="toolbar">
+            <button type="button" data-cmd="bold" title="Bold"><strong>B</strong></button>
+            <button type="button" data-cmd="italic" title="Italic"><em>I</em></button>
+            <button type="button" data-cmd="underline" title="Underline"><u>U</u></button>
+          </div>
+          <div class="editor comment-editor" contenteditable="true" role="textbox" aria-multiline="true" data-placeholder="Write a response..."></div>
+        </div>
+      </div>
+      <button type="button" class="primary-button submit-comment">Post response</button>
+      <button type="button" class="secondary-button cancel-comment">Cancel</button>
+      <div class="status comment-status" role="status"></div>
+    </div>
+  </template>
+
+  <script src="config.js"></script>
+  <script src="app.js"></script>
+</body>
+</html>

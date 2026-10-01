@@ -147,6 +147,12 @@ input[type="text"]:focus { border-color: var(--ink); }
   margin-left: 18px; text-decoration: underline; text-underline-offset: 3px;
 }
 
+.photo-picker { display: flex; align-items: center; gap: 14px; flex-wrap: wrap; }
+.photo-picker .secondary-button { margin-left: 0; }
+.photo-preview { display: flex; align-items: center; gap: 10px; }
+.photo-preview-img { max-width: 120px; max-height: 120px; display: block; border: 1px solid var(--rule); border-radius: 2px; }
+.post-photo { display: block; max-width: 100%; height: auto; border-radius: 2px; margin: 18px 0; }
+.comment-photo { display: block; max-width: 100%; height: auto; border-radius: 2px; margin: 10px 0; }
 .error { color: #7a302c; font-size: 14px; margin-top: 14px; }
 .status { color: var(--muted); font-size: 14px; line-height: 1.5; margin-top: 14px; }
 .empty { color: var(--muted); font-size: 16px; }

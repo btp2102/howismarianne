@@ -90,6 +90,19 @@
         </div>
       </div>
 
+
+      <div class="field">
+        <label>Photo (optional)</label>
+        <div id="postPhotoPicker" class="photo-picker">
+          <button type="button" class="secondary-button choose-photo">Choose photo</button>
+          <input type="file" id="postPhotoInput" class="photo-input" accept="image/jpeg,image/png,image/webp,image/*" hidden>
+          <div class="photo-preview" hidden>
+            <img class="photo-preview-img" alt="Selected photo preview">
+            <button type="button" class="text-button remove-photo">Remove</button>
+          </div>
+        </div>
+      </div>
+
       <button id="publishButton" class="primary-button" type="button">Publish update</button>
       <button id="cancelPostButton" class="secondary-button" type="button">Cancel</button>
       <div id="postStatus" class="status" role="status"></div>
@@ -116,6 +129,19 @@
           <div class="editor comment-editor" contenteditable="true" role="textbox" aria-multiline="true" data-placeholder="Write a response..."></div>
         </div>
       </div>
+
+      <div class="field">
+        <label>Photo (optional)</label>
+        <div class="photo-picker">
+          <button type="button" class="secondary-button choose-photo">Choose photo</button>
+          <input type="file" class="photo-input" accept="image/jpeg,image/png,image/webp,image/*" hidden>
+          <div class="photo-preview" hidden>
+            <img class="photo-preview-img" alt="Selected photo preview">
+            <button type="button" class="text-button remove-photo">Remove</button>
+          </div>
+        </div>
+      </div>
+
       <button type="button" class="primary-button submit-comment">Post response</button>
       <button type="button" class="secondary-button cancel-comment">Cancel</button>
       <div class="status comment-status" role="status"></div>

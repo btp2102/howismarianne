@@ -335,6 +335,15 @@
     body.innerHTML = richTextToHtml(post.body);
     article.appendChild(body);
 
+    if (post.image) {
+      const img = document.createElement('img');
+      img.className = 'post-photo';
+      img.src = post.image;
+      img.loading = 'lazy';
+      img.alt = '';
+      article.appendChild(img);
+    }
+
     article.appendChild(buildResponses(post));
     return article;
   }
@@ -357,6 +366,8 @@
 
   // ------------------------------------------------------------ publish
 
+  wirePhotoPicker($('postPhotoPicker'));
+
   $('newPostButton').addEventListener('click', () => {
     if (role !== 'family') return;
     $('postForm').hidden = false;
@@ -371,6 +382,7 @@
   function hidePostForm() {
     $('postForm').hidden = true;
     $('postStatus').textContent = '';
+    resetPhotoPicker($('postPhotoPicker'));
   }
 
   $('publishButton').addEventListener('click', async () => {
@@ -381,14 +393,15 @@
     const body = editorToMarkup(editor);
     const button = $('publishButton');
     const status = $('postStatus');
+    const photo = photoOf($('postPhotoPicker'));
 
     if (!author) { status.textContent = 'Please enter the author name.'; return; }
     if (!stripMarkup(body).trim()) { status.textContent = 'Please write an update.'; return; }
 
     button.disabled = true;
-    status.textContent = 'Publishing…';
+    status.textContent = photo ? 'Uploading photo…' : 'Publishing…';
     try {
-      const post = await api('createPost', token, author, title, body);
+      const post = await api('createPost', token, author, title, body, photo);
       store.set(NAME_KEY, author);
       $('postTitle').value = '';
       editor.innerHTML = '';
@@ -428,8 +441,17 @@
         const body = document.createElement('div');
         body.className = 'comment-body';
         body.innerHTML = richTextToHtml(comment.body);
-
         item.append(meta, body);
+
+        if (comment.image) {
+          const img = document.createElement('img');
+          img.className = 'comment-photo';
+          img.src = comment.image;
+          img.loading = 'lazy';
+          img.alt = '';
+          item.appendChild(img);
+        }
+
         wrapper.appendChild(item);
       });
     }
@@ -450,6 +472,7 @@
     const form = $('commentFormTemplate').content.firstElementChild.cloneNode(true);
     const nameInput = form.querySelector('.comment-name-input');
     nameInput.value = store.get(NAME_KEY);
+    wirePhotoPicker(form.querySelector('.photo-picker'));
     form.querySelector('.cancel-comment').addEventListener('click', () => form.remove());
     form.querySelector('.submit-comment').addEventListener('click', () => submitComment(post, form));
     wrapper.appendChild(form);
@@ -461,14 +484,15 @@
     const body = editorToMarkup(form.querySelector('.comment-editor'));
     const status = form.querySelector('.comment-status');
     const button = form.querySelector('.submit-comment');
+    const photo = photoOf(form.querySelector('.photo-picker'));
 
     if (!name) { status.textContent = 'Please enter your name.'; return; }
     if (!stripMarkup(body).trim()) { status.textContent = 'Please write a response.'; return; }
 
     button.disabled = true;
-    status.textContent = 'Posting…';
+    status.textContent = photo ? 'Uploading photo…' : 'Posting…';
     try {
-      const comment = await api('createComment', token, post.id, name, body);
+      const comment = await api('createComment', token, post.id, name, body, photo);
       store.set(NAME_KEY, name);
       post.comments.push(comment);
       refreshPost(post);
@@ -476,6 +500,97 @@
       button.disabled = false;
       handleError(err, status);
     }
+  }
+
+  // ------------------------------------------------------------ photo picker
+
+  const MAX_DIMENSION = 1600;          // longest side, in pixels, after resizing
+  const JPEG_QUALITY = 0.82;
+  const MAX_UPLOAD_MIME = 'image/jpeg';
+
+  // Resized photo data lives on the picker element itself (never a file path, just pixels).
+  function wirePhotoPicker(picker) {
+    if (!picker || picker.dataset.wired) return;
+    picker.dataset.wired = '1';
+    const input = picker.querySelector('.photo-input');
+    const preview = picker.querySelector('.photo-preview');
+    const img = picker.querySelector('.photo-preview-img');
+    const chooseBtn = picker.querySelector('.choose-photo');
+    const removeBtn = picker.querySelector('.remove-photo');
+    const statusEl = picker.closest('.form-panel, .comment-form').querySelector('.status');
+
+    chooseBtn.addEventListener('click', () => input.click());
+    removeBtn.addEventListener('click', () => resetPhotoPicker(picker));
+
+    input.addEventListener('change', async () => {
+      const file = input.files && input.files[0];
+      input.value = '';   // lets picking the same file again fire 'change'
+      if (!file) return;
+      if (!/^image\//.test(file.type)) {
+        if (statusEl) statusEl.textContent = 'Please choose an image file.';
+        return;
+      }
+      chooseBtn.disabled = true;
+      if (statusEl) statusEl.textContent = 'Preparing photo…';
+      try {
+        const dataUrl = await resizeImageFile(file);
+        picker.dataset.photo = dataUrl;
+        img.src = dataUrl;
+        preview.hidden = false;
+        chooseBtn.hidden = true;
+        if (statusEl) statusEl.textContent = '';
+      } catch (err) {
+        if (statusEl) statusEl.textContent = 'That photo could not be used. Please try a different one.';
+      } finally {
+        chooseBtn.disabled = false;
+      }
+    });
+  }
+
+  function resetPhotoPicker(picker) {
+    if (!picker) return;
+    delete picker.dataset.photo;
+    const preview = picker.querySelector('.photo-preview');
+    const img = picker.querySelector('.photo-preview-img');
+    const chooseBtn = picker.querySelector('.choose-photo');
+    if (preview) preview.hidden = true;
+    if (img) img.src = '';
+    if (chooseBtn) chooseBtn.hidden = false;
+  }
+
+  // {data, mimeType} for the API, or undefined if no photo was chosen.
+  function photoOf(picker) {
+    const dataUrl = picker && picker.dataset.photo;
+    if (!dataUrl) return undefined;
+    const comma = dataUrl.indexOf(',');
+    return { data: dataUrl.slice(comma + 1), mimeType: MAX_UPLOAD_MIME };
+  }
+
+  // Draws the image onto a canvas at a capped size and re-encodes it as a JPEG, so a multi-
+  // megabyte phone photo becomes a small upload before it ever reaches the network.
+  function resizeImageFile(file) {
+    return new Promise((resolve, reject) => {
+      const reader = new FileReader();
+      reader.onerror = () => reject(reader.error);
+      reader.onload = () => {
+        const image = new Image();
+        image.onerror = () => reject(new Error('not an image'));
+        image.onload = () => {
+          const scale = Math.min(1, MAX_DIMENSION / Math.max(image.naturalWidth, image.naturalHeight));
+          const w = Math.max(1, Math.round(image.naturalWidth * scale));
+          const h = Math.max(1, Math.round(image.naturalHeight * scale));
+          const canvas = document.createElement('canvas');
+          canvas.width = w; canvas.height = h;
+          const ctx = canvas.getContext('2d');
+          ctx.fillStyle = '#fff';       // flattens transparency (PNG, etc.) onto white before JPEG encoding
+          ctx.fillRect(0, 0, w, h);
+          ctx.drawImage(image, 0, 0, w, h);
+          resolve(canvas.toDataURL(MAX_UPLOAD_MIME, JPEG_QUALITY));
+        };
+        image.src = reader.result;
+      };
+      reader.readAsDataURL(file);
+    });
   }
 
   // ------------------------------------------------------------ editor (B / I / U)

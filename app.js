@@ -41,6 +41,7 @@
   // way as the title, so a repeat visitor sees it before the network request returns.
   function applyLoginHelp(text) {
     const el = $('loginHelp');
+    if (!el) return;   // this element may be missing if index.html is out of date; skip rather than break the whole page
     if (text && text.trim()) {
       el.innerHTML = richTextToHtml(text);
       el.hidden = false;

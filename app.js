@@ -5,6 +5,7 @@
   const TOKEN_KEY = 'familyUpdatesToken';
   const NAME_KEY = 'familyUpdatesName';
   const TITLE_KEY = 'familyUpdatesTitle';
+  const LOGIN_HELP_KEY = 'familyUpdatesLoginHelp';
 
   const $ = id => document.getElementById(id);
 
@@ -36,6 +37,20 @@
     store.set(TITLE_KEY, title);
   }
 
+  // Shown on the sign-in screen only, for people having trouble logging in. Cached the same
+  // way as the title, so a repeat visitor sees it before the network request returns.
+  function applyLoginHelp(text) {
+    const el = $('loginHelp');
+    if (text && text.trim()) {
+      el.innerHTML = richTextToHtml(text);
+      el.hidden = false;
+    } else {
+      el.textContent = '';
+      el.hidden = true;
+    }
+    store.set(LOGIN_HELP_KEY, text || '');
+  }
+
   function renderWelcome(text) {
     if (text && text.trim()) {
       welcomeEl.innerHTML = richTextToHtml(text);
@@ -47,6 +62,7 @@
   }
 
   applyTitle(store.get(TITLE_KEY));
+  applyLoginHelp(store.get(LOGIN_HELP_KEY));
 
   // ------------------------------------------------------------ backend
 
@@ -192,8 +208,8 @@
       loadFirstPage();
     } else {
       showLogin('');
-      // The sign-in screen needs the title before anyone is signed in.
-      api('info').then(r => applyTitle(r && r.title)).catch(() => {});
+      // The sign-in screen needs the title (and any login help text) before anyone is signed in.
+      api('info').then(r => { applyTitle(r && r.title); applyLoginHelp(r && r.loginHelp); }).catch(() => {});
     }
   }
 
@@ -309,6 +325,44 @@
     postEls.set(post.id, el);
   }
 
+  // A post/comment's `image` field is either:
+  //   - a data: URL string — a photo just uploaded this session, ready to show right away, or
+  //   - `true` — a photo exists but hasn't been fetched yet (the list endpoint no longer reads
+  //     photo bytes, so the page loads fast even when posts have photos), or
+  //   - falsy — no photo.
+  // In the `true` case, a placeholder is shown immediately and the real image is fetched
+  // afterward, off to the side. If that fetch is slow or fails, the placeholder just stays (or
+  // fades to a small "photo unavailable" state) — it never blocks rendering and never turns into
+  // a page-level error, even for the most recent post.
+  function attachImage(parent, item, className, kind, id) {
+    if (!item.image) return;
+    const img = document.createElement('img');
+    img.className = className;
+    img.loading = 'lazy';
+    img.alt = '';
+    parent.appendChild(img);
+    if (typeof item.image === 'string') {
+      img.src = item.image;
+      return;
+    }
+    fetchImageLazily(img, kind, id);
+  }
+
+  function fetchImageLazily(img, kind, id) {
+    img.classList.add('photo-pending');
+    api('image', token, kind, id).then(r => {
+      img.classList.remove('photo-pending');
+      if (r && r.image) {
+        img.src = r.image;
+      } else {
+        img.classList.add('photo-unavailable');
+      }
+    }).catch(() => {
+      img.classList.remove('photo-pending');
+      img.classList.add('photo-unavailable');
+    });
+  }
+
   function buildPost(post) {
     const article = document.createElement('article');
     article.className = 'post';
@@ -335,14 +389,7 @@
     body.innerHTML = richTextToHtml(post.body);
     article.appendChild(body);
 
-    if (post.image) {
-      const img = document.createElement('img');
-      img.className = 'post-photo';
-      img.src = post.image;
-      img.loading = 'lazy';
-      img.alt = '';
-      article.appendChild(img);
-    }
+    attachImage(article, post, 'post-photo', 'post', post.id);
 
     article.appendChild(buildResponses(post));
     return article;
@@ -443,14 +490,7 @@
         body.innerHTML = richTextToHtml(comment.body);
         item.append(meta, body);
 
-        if (comment.image) {
-          const img = document.createElement('img');
-          img.className = 'comment-photo';
-          img.src = comment.image;
-          img.loading = 'lazy';
-          img.alt = '';
-          item.appendChild(img);
-        }
+        attachImage(item, comment, 'comment-photo', 'comment', comment.id);
 
         wrapper.appendChild(item);
       });

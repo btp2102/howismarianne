@@ -44,6 +44,9 @@ button { cursor: pointer; }
   outline: none; color: var(--ink); font-size: 17px;
 }
 .login-box button { margin-top: 25px; }
+.login-help { font-size: 14px; line-height: 1.55; color: var(--muted); margin: -10px 0 25px; }
+.login-help p { margin: 0 0 0.8em; }
+.login-help p:last-child { margin-bottom: 0; }
 
 #site { width: 100%; max-width: 720px; margin: 0 auto; padding: 48px 24px 100px; }
 /* Title + welcome, closed off from the posts by a heavier rule than the one between posts. */
@@ -153,6 +156,14 @@ input[type="text"]:focus { border-color: var(--ink); }
 .photo-preview-img { max-width: 120px; max-height: 120px; display: block; border: 1px solid var(--rule); border-radius: 2px; }
 .post-photo { display: block; max-width: 100%; height: auto; border-radius: 2px; margin: 18px 0; }
 .comment-photo { display: block; max-width: 100%; height: auto; border-radius: 2px; margin: 10px 0; }
+/* A photo fetched lazily, after the rest of the page: a soft placeholder while it loads, and
+   quietly out of the way if it never arrives (never a broken-image icon, never an error). */
+.post-photo.photo-pending, .comment-photo.photo-pending {
+  min-height: 120px; background: linear-gradient(90deg, var(--field) 25%, var(--rule) 37%, var(--field) 63%);
+  background-size: 400% 100%; animation: photoPulse 1.4s ease-in-out infinite;
+}
+.post-photo.photo-unavailable, .comment-photo.photo-unavailable { display: none; }
+@keyframes photoPulse { 0% { background-position: 100% 50%; } 100% { background-position: 0 50%; } }
 .error { color: #7a302c; font-size: 14px; margin-top: 14px; }
 .status { color: var(--muted); font-size: 14px; line-height: 1.5; margin-top: 14px; }
 .empty { color: var(--muted); font-size: 16px; }

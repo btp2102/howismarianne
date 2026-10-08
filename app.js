@@ -356,10 +356,14 @@
         img.src = r.image;
       } else {
         img.classList.add('photo-unavailable');
+        console.warn('Photo fetch returned no image data for', kind, id, r);
       }
-    }).catch(() => {
+    }).catch(err => {
       img.classList.remove('photo-pending');
       img.classList.add('photo-unavailable');
+      // Logged (not just swallowed) so a failed photo fetch is visible in the console instead of
+      // just quietly disappearing with nothing to go on.
+      console.warn('Photo fetch failed for', kind, id, err && err.message);
     });
   }
 
